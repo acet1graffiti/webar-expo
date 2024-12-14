@@ -1,19 +1,52 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Test AR</title>
-    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.1.0/dist/aframe-mindar.js"></script>
-  </head>
-  <body>
-    <a-scene
-      mindar-image="imageTargetSrc: target01.mind; autoStart: true;"
-      embedded
-      color-space="sRGB"
-      renderer="antialias: true; precision: mediump;"
-      vr-mode-ui="enabled: false;"
-      device-orientation-permission-ui="enabled: true">
-      <a-camera position="0 0 0"></a-camera>
-    </a-scene>
-  </body>
+<head>
+  <title>AR Camera Permission</title>
+  <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.1.0/dist/aframe-mindar.js"></script>
+</head>
+<body>
+  <div id="permission-popup" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); color: white; text-align: center; padding-top: 20%;">
+    <p>Cette application a besoin d'accéder à votre caméra pour fonctionner.</p>
+    <button id="request-permission" style="padding: 10px 20px; font-size: 16px;">Autoriser la Caméra</button>
+  </div>
+
+  <a-scene
+    mindar-image="imageTargetSrc: target01.mind; autoStart: true;"
+    embedded
+    color-space="sRGB"
+    renderer="antialias: true; precision: lowp;"
+    vr-mode-ui="enabled: false;"
+    device-orientation-permission-ui="enabled: true">
+    <a-camera position="0 0 0"></a-camera>
+  </a-scene>
+
+  <script>
+    async function checkCameraPermission() {
+      try {
+        // Vérifie si la permission caméra est déjà accordée
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        console.log("Caméra autorisée.");
+        document.getElementById('permission-popup').style.display = 'none';
+      } catch (error) {
+        console.warn("Caméra non autorisée, demande en cours...");
+        document.getElementById('permission-popup').style.display = 'block';
+      }
+    }
+
+    // Bouton pour demander la permission caméra
+    document.getElementById('request-permission').addEventListener('click', async () => {
+      try {
+        await navigator.mediaDevices.getUserMedia({ video: true });
+        document.getElementById('permission-popup').style.display = 'none';
+        location.reload();
+      } catch (error) {
+        alert("Impossible d'accéder à la caméra. Vérifiez vos paramètres.");
+      }
+    });
+
+    // Vérifie la permission au chargement
+    window.onload = checkCameraPermission;
+  </script>
+</body>
 </html>
